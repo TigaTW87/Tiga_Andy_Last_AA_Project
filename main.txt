@@ -2,3 +2,12 @@
 start of the code, this code is using Python, Mu-editor, and metro board.
 Made by Andy and Tiga in Mr.Weinberg's Advanced Automation class.
 '''
+# Write your code here :-)
+import time
+import board
+from analogio import AnalogIn
+
+sensor_1 = AnalogIn(board.A1)
+sensor_2 = AnalogIn(board.A2)
+sensor_2 = AnalogIn(board.A3)
+#setting up sensor with pin
