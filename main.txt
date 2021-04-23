@@ -1,0 +1,4 @@
+'''
+start of the code, this code is using Python, Mu-editor, and metro board.
+Made by Andy and Tiga in Mr.Weinberg's Advanced Automation class.
+'''
