@@ -6,8 +6,73 @@ Made by Andy and Tiga in Mr.Weinberg's Advanced Automation class.
 import time
 import board
 from analogio import AnalogIn
+from digitalio import DigitalInOut
 
 sensor_1 = AnalogIn(board.A1)
 sensor_2 = AnalogIn(board.A2)
-sensor_2 = AnalogIn(board.A3)
+sensor_3 = AnalogIn(board.A3)
+button = Digital(board.D0)
+button.direction.INPUT
 #setting up sensor with pin
+
+raw_data = []
+speed_data = []
+curve_data = []
+#setting up list to store data
+
+def read_pin1():
+    return sensor_1.value
+def read_pin2():
+    return sensor_2.value
+def read_pin3():
+    return sensor_3.value
+def read_button():
+    button.value
+    
+#setting getting sensor value
+
+sleep_time = 0.005
+start = True
+old1 = read_pin1
+old2 = read_pin2
+old3 = read_pin3
+button_pressed = read_button
+#setting up variables
+
+while True:
+    if start:
+        # so the purpose is to make the sensors detect if there are anything infront of them.
+        check1 = 0
+        check2 = 0
+        check3 = 0
+        current_time = time.monotonic()
+        current1 = read_pin1
+        current2 = read_pin2
+        current3 = read_pin3
+        if current1 - old1 >= 1000:
+            #if the sensor detects something closer, it will record the data.
+            raw_data.append([current_time, current1])
+            check1 = 1
+            
+        if current2 - old1 >= 1000:
+            raw_data.append([current_time, current2])
+            check2 = 1
+            
+        if current2 - old1 >= 1000:
+            raw_data.append([current_time, current2])
+            check3 = 1
+        
+        if check1 + check2 + check3 == 3:
+            #this means the ball has passed all the sensors.
+            start = false
+            #stop getting data
+        
+    else:
+        if button_pressed:
+            start = True
+        #if the user press the button, it will get data again.
+        pass
+    print("{0},{1}".format(row[0], row[1]))
+    time.sleep(sleep_time)
+    
+    
