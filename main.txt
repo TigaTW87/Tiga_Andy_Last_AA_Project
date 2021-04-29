@@ -12,22 +12,56 @@ from digitalio import DigitalInOut
 sensor_1 = AnalogIn(board.A1)
 sensor_2 = AnalogIn(board.A2)
 sensor_3 = AnalogIn(board.A3)
-button = DigitalInOut(board.D0)
+button = DigitalInOut(board.D7)
 button.direction.INPUT
 #setting up sensor with pin
 
-raw_data = []
-speed_data = []
-curve_data = []
-#setting up list to store data
-
 sleep_time = 1
-start = True
+start = False
 old1 = sensor_1.value
 old2 = sensor_2.value
 old3 = sensor_3.value
+record_time = 30.0
+old_time = time.monotonic()
+data = []
+elapsed_time = 0.0
+fin = False
+
 #setting up variables
 
+def read_a1():
+    return sensor_1.value
+def read_a2():
+    return sensor_2.value
+def read_a3():
+    return sensor_3.value
+
+
+while True:
+    if button.value == True:
+        print("start")
+        while (elapsed_time < record_time):
+            current_time = time.monotonic()
+            value_1 = read_a1()
+            value_2 = read_a2()
+            value_3 = read_a3()
+            record_1 = value_1
+            record_2 = value_2
+            record_3 = value_3
+            
+            data.append([elapsed_time, record_1, record_2, record_3])
+            time.sleep(sleep_time)
+            elapsed_time += current_time - old_time
+            old_time = current_time
+        print("finish")
+        fin = True
+    if fin == True:
+        for row in data:
+            print("{0},{1}".format(row[0], row[1]))
+        time.sleep(15)
+        fin = False
+    
+    time.sleep(0.1)
 
 
 
