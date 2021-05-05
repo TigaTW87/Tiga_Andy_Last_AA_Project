@@ -4,6 +4,7 @@ Made by Andy and Tiga in Mr.Weinberg's Advanced Automation class.
 '''
 # Write your code here :-)
 #the closer the item is to sensor, the bigger the value is.
+#with the prototype 
 import time
 import board
 from analogio import AnalogIn
@@ -16,16 +17,12 @@ button = DigitalInOut(board.D7)
 button.direction.INPUT
 #setting up sensor with pin
 
-sleep_time = 1
-start = False
-old1 = sensor_1.value
-old2 = sensor_2.value
-old3 = sensor_3.value
-record_time = 30.0
+sleep_time = 0.005
 old_time = time.monotonic()
 data = []
 elapsed_time = 0.0
-fin = False
+threshold = 43000
+
 
 #setting up variables
 
@@ -38,38 +35,34 @@ def read_a3():
 
 
 while True:
-    if button.value == True:
-        print("start")
-        while (elapsed_time < record_time):
-            current_time = time.monotonic()
-            value_1 = read_a1()
-            value_2 = read_a2()
-            value_3 = read_a3()
-            record_1 = value_1
-            record_2 = value_2
-            record_3 = value_3
+    if not button.value:
+        current_time = time.monotonic()
+        pin_1 = read_a1()
+        pin_2 = read_a2()
+        pin_3 = read_a3()
+        if pin_1 >= threshold:
+            data.append([elapsed_time, pin_1])
             
-            data.append([elapsed_time, record_1, record_2, record_3])
-            time.sleep(sleep_time)
-            elapsed_time += current_time - old_time
-            old_time = current_time
-        print("finish")
-        fin = True
-    if fin == True:
+        if pin_2 >= threshold:
+            data.append([elapsed_time, pin_2])
+            
+        if pin_3 >= threshold:
+            data.append([elapsed_time, pin_3])
+        
+        time.sleep(sleep_time)
+        elapsed_time += current_time - old_time
+        old_time = current_time
+        
+    elif button.value:
+        # When the button is pressed, it will reset the variable and pause for 3 second
         for row in data:
             print("{0},{1}".format(row[0], row[1]))
-        time.sleep(15)
-        fin = False
-    
-    time.sleep(0.1)
-
-
-
-
-
-
-
-
+        elapsed_time = 0
+        current_time = time.monotonic()
+        old_time = time.monotonic()
+        print("resetting...")
+        time.sleep(3)
+        print("restart!")
 
 
 #Apr 27th, Mr.Weinberg said that we don't need to worry about the logic first this code should focus on getting the data.
@@ -113,4 +106,3 @@ while True:
     #print("{0},{1}".format(row[0], row[1]))
     time.sleep(sleep_time)
 '''
-    
