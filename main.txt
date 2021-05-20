@@ -13,15 +13,18 @@ sensor_2 = AnalogIn(board.A2)
 sensor_3 = AnalogIn(board.A3)
 #setting up sensor with pin
 
+sensor_distance = 13.0
 sleep_time = 0.01
 old1 = sensor_1.value
 old2 = sensor_2.value
 old3 = sensor_3.value
-record_time = 3
+record_time = 50
 old_time = time.monotonic()
 data = []
 elapsed_time = 0.0
-
+max_1 = 0
+max_2 = 0
+max_3 = 0
 
 #setting up variables
 
@@ -32,6 +35,13 @@ def read_a2():
 def read_a3():
     return sensor_3.value
 
+print("3")
+time.sleep(1.0)
+print("2")
+time.sleep(1.0)
+print("1")
+time.sleep(1.0)
+print("go")
 
 while elapsed_time < record_time:
     current_time = time.monotonic()
@@ -44,7 +54,42 @@ while elapsed_time < record_time:
     old_time = current_time
 
 for row in data:
-    print("{0},{1},{2},{3}".format(row[0], row[1], row[2], row[3]))
+    if row[1] > max_1:
+        max_1 = float(row[1])
+        time_1 = float(row[0])
+    
+    if row[2] > max_2:
+        max_2 = float(row[2])
+        time_2 = float(row[0])
+        
+    if row[3] > max_3:
+        max_3 = float(row[3])
+        time_3 = float(row[0])
+    #
+    
+initial_speed = sensor_distance/(time_2 - time_1)
+final_speed = sensor_distance/(time_3 - time_2)
+acceleration = (final_speed - initial_speed)/(time_3 - time_1)
+dir_tol = 500
+if max_3 >= (max_1 - dir_tol) and max_3 <= (max_1 + dir_tol):
+  direction = "straight"
+elif max_3 > max_1:
+  direction = "right"
+elif max_3 < max_1:
+  direction = "left"
+
+# Round result
+initial_speed = round(initial_speed, 2)
+final_speed = round(final_speed, 2)
+acceleration = round(acceleration, 2)
+
+# Print out processed data
+print("Initial speed: " + str(initial_speed) + " cm/sec")
+print("Final speed: " + str(final_speed) + " cm/sec")
+print("Acceleration: " + str(acceleration) + " cm/sec²")
+print("Direction: " + str(direction))
+#print(str(time_1) + " " + str(time_2) + " " + str(time_3))
+
 
 #Apr 27th, Mr.Weinberg said that we don't need to worry about the logic first this code should focus on getting the data.
 #Then, we can copy the serials into csv file and smooth it with the code we have on repl.
