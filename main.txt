@@ -1,78 +1,122 @@
 '''
 start of the code, this code is using Python, Mu-editor, and metro board.
 Made by Andy and Tiga in Mr.Weinberg's Advanced Automation class.
+Note: the closer the item is to sensor, the bigger the value is.
 '''
-# Write your code here :-)
+
+# Import libraries
 import time
 import board
 from analogio import AnalogIn
 from digitalio import DigitalInOut
 
+# Define sensors and button
 sensor_1 = AnalogIn(board.A1)
 sensor_2 = AnalogIn(board.A2)
 sensor_3 = AnalogIn(board.A3)
-button = Digital(board.D0)
-button.direction.INPUT
-#setting up sensor with pin
+button_1 = DigitalInOut(board.D7)
+button_1.direction.INPUT
 
-raw_data = []
-speed_data = []
-curve_data = []
-#setting up list to store data
+# Variables
+# Time
+old_time = time.monotonic()
+elapsed_time = 0.0
+sleep_time = 0.01
+record_time = 5.0
+# Data processing
+sensor_distance = 13.0
+data = []
 
-def read_pin1():
+# Acquire sensor value
+def read_a1():
     return sensor_1.value
-def read_pin2():
+def read_a2():
     return sensor_2.value
-def read_pin3():
+def read_a3():
     return sensor_3.value
-def read_button():
-    button.value
     
-#setting getting sensor value
+# Getting data and put into list
+def get_data():
+    global elapsed_time
+    global current_time
+    global old_time
+    global data
+    global record_time
+    record_time += elapsed_time
+    #
+    while elapsed_time < record_time:
+        current_time = time.monotonic()
+        pin_1 = read_a1()
+        pin_2 = read_a2()
+        pin_3 = read_a3()
+        data.append([elapsed_time, pin_1, pin_2, pin_3])
+        time.sleep(sleep_time)
+        elapsed_time += current_time - old_time
+        old_time = current_time
 
-sleep_time = 0.005
-start = True
-old1 = read_pin1
-old2 = read_pin2
-old3 = read_pin3
-button_pressed = read_button
-#setting up variables
+# Clear the time
+def reset():
+    global elapsed_time
+    global current_time
+    global old_time
+    global data
+    current_time = time.monotonic()
+    old_time = time.monotonic()
+    elapsed_time = 0
+    data = []
+
+# Calculate the data and turn it into what we want
+def process_data():
+    global data
+    direction_tolerance = 500
+    max_1 = 0
+    max_2 = 0
+    max_3 = 0
+    
+    #
+    for row in data:
+        if row[1] > max_1:
+            max_1 = float(row[1])
+            time_1 = float(row[0])
+    #
+        if row[2] > max_2:
+            max_2 = float(row[2])
+            time_2 = float(row[0])
+    #
+        if row[3] > max_3:
+            max_3 = float(row[3])
+            time_3 = float(row[0])
+    #
+    initial_speed = sensor_distance/(time_2 - time_1)
+    final_speed = sensor_distance/(time_3 - time_2)
+    acceleration = (final_speed - initial_speed)/(time_3 - time_1)
+    if max_3 >= (max_1 - direction_tolerance) and max_3 <= (max_1 + direction_tolerance):
+      direction = "straight"
+    elif max_3 > max_1:
+      direction = "right"
+    elif max_3 < max_1:
+      direction = "left"
+    # Round result
+    initial_speed = round(initial_speed, 2)
+    final_speed = round(final_speed, 2)
+    acceleration = round(acceleration, 2)
+    # Print out processed data
+    print("Initial speed: " + str(initial_speed) + " cm/sec")
+    print("Final speed: " + str(final_speed) + " cm/sec")
+    print("Acceleration: " + str(acceleration) + " cm/sec²")
+    print("Direction: " + str(direction))
 
 while True:
-    if start:
-        # so the purpose is to make the sensors detect if there are anything infront of them.
-        check1 = 0
-        check2 = 0
-        check3 = 0
-        current_time = time.monotonic()
-        current1 = read_pin1
-        current2 = read_pin2
-        current3 = read_pin3
-        if current1 - old1 >= 1000:
-            #if the sensor detects something closer, it will record the data.
-            raw_data.append([current_time, current1])
-            check1 = 1
-            
-        if current2 - old1 >= 1000:
-            raw_data.append([current_time, current2])
-            check2 = 1
-            
-        if current2 - old1 >= 1000:
-            raw_data.append([current_time, current2])
-            check3 = 1
-        
-        if check1 + check2 + check3 == 3:
-            #this means the ball has passed all the sensors.
-            start = false
-            #stop getting data
-        
-    else:
-        if button_pressed:
-            start = True
-        #if the user press the button, it will get data again.
-        pass
-    print("{0},{1}".format(row[0], row[1]))
-    time.sleep(sleep_time)
-    
-    
+    if button_1.value == True:
+        print("3")
+        time.sleep(1.0)
+        print("2")
+        time.sleep(1.0)
+        print("1")
+        time.sleep(1.0)
+        reset()
+        print("go")
+        get_data()
+        process_data()
+    # 
+    time.sleep(0.1)
